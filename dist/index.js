@@ -169,6 +169,11 @@ function createComment(file, chunk, aiResponses) {
         if (!file.to) {
             return [];
         }
+        console.log("Comment payload:", {
+            body: aiResponse.reviewComment,
+            path: file.to,
+            line: Number(aiResponse.lineNumber),
+        });
         return {
             body: aiResponse.reviewComment,
             path: file.to,
