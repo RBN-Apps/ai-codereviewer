@@ -181,15 +181,25 @@ function createComment(file, chunk, aiResponses) {
         };
     });
 }
-function createReviewComment(owner, repo, pull_number, comments) {
+function createReviewCommentIndividually(owner, repo, pull_number, comments) {
     return __awaiter(this, void 0, void 0, function* () {
-        yield octokit.pulls.createReview({
-            owner,
-            repo,
-            pull_number,
-            comments,
-            event: "COMMENT",
-        });
+        for (const comment of comments) {
+            try {
+                console.log("Sending comment:", comment);
+                yield octokit.pulls.createReview({
+                    owner,
+                    repo,
+                    pull_number,
+                    comments: [comment],
+                    event: "COMMENT",
+                });
+                console.log("Comment sent successfully:", comment);
+            }
+            catch (error) {
+                console.error("Error sending comment:", comment);
+                console.error(error);
+            }
+        }
     });
 }
 function main() {
@@ -233,7 +243,7 @@ function main() {
         });
         const comments = yield analyzeCode(filteredDiff, prDetails);
         if (comments.length > 0) {
-            yield createReviewComment(prDetails.owner, prDetails.repo, prDetails.pull_number, comments);
+            yield createReviewCommentIndividually(prDetails.owner, prDetails.repo, prDetails.pull_number, comments);
         }
     });
 }

@@ -172,20 +172,30 @@ function createComment(
   });
 }
 
-async function createReviewComment(
+async function createReviewCommentIndividually(
   owner: string,
   repo: string,
   pull_number: number,
   comments: Array<{ body: string; path: string; line: number }>
 ): Promise<void> {
-  await octokit.pulls.createReview({
-    owner,
-    repo,
-    pull_number,
-    comments,
-    event: "COMMENT",
-  });
+  for (const comment of comments) {
+    try {
+      console.log("Sending comment:", comment);
+      await octokit.pulls.createReview({
+        owner,
+        repo,
+        pull_number,
+        comments: [comment], // Send only one comment at a time
+        event: "COMMENT",
+      });
+      console.log("Comment sent successfully:", comment);
+    } catch (error) {
+      console.error("Error sending comment:", comment);
+      console.error(error);
+    }
+  }
 }
+
 
 async function main() {
   const prDetails = await getPRDetails();
@@ -240,7 +250,7 @@ async function main() {
 
   const comments = await analyzeCode(filteredDiff, prDetails);
   if (comments.length > 0) {
-    await createReviewComment(
+    await createReviewCommentIndividually(
       prDetails.owner,
       prDetails.repo,
       prDetails.pull_number,
